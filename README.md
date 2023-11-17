@@ -1,1 +1,1 @@
-Utility similar to UNIX/Linux tree one
+### The utility simialr to the standard Linux ```tree``` utility
