@@ -1,7 +1,8 @@
-package main
+package tree_test
 
 import (
 	"bytes"
+	"github/vzhovtan/tree"
 	"testing"
 )
 
@@ -37,7 +38,7 @@ func TestTreeFull(t *testing.T) {
 	fflag := &x
 	var last bool
 	var lastlist []bool
-	err := dirTree(out, "testdata", last, fflag, lastlist)
+	err := tree.BuildDirTree(out, "testdata", last, fflag, lastlist)
 	if err != nil {
 		t.Errorf("test TreeFull Failed - error")
 	}
@@ -67,7 +68,7 @@ func TestTreeDir(t *testing.T) {
 	fflag := &x
 	var last bool
 	var lastlist []bool
-	err := dirTree(out, "testdata", last, fflag, lastlist)
+	err := tree.BuildDirTree(out, "testdata", last, fflag, lastlist)
 	if err != nil {
 		t.Errorf("test TreeDir Failed - error")
 	}

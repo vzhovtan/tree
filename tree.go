@@ -1,4 +1,4 @@
-package main
+package tree
 
 import (
 	"flag"
@@ -10,13 +10,13 @@ import (
 	"strings"
 )
 
-type fentry struct {
+type Fentry struct {
 	fname string
 	ftype bool
 	fsize int64
 }
 
-func main() {
+func Main() {
 	fflag := flag.Bool("f", false, "includes files into the output")
 	flag.Parse()
 	if len(flag.Args()) < 1 {
@@ -26,26 +26,25 @@ func main() {
 	start := flag.Args()[0]
 	var last bool
 	var lastlist []bool
-	err := dirTree(os.Stdout, start, last, fflag, lastlist)
+	err := BuildDirTree(os.Stdout, start, last, fflag, lastlist)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 }
 
-func dirTree(out io.Writer, s string, last bool, fflag *bool, lastlist []bool) error {
+func BuildDirTree(out io.Writer, s string, last bool, fflag *bool, lastlist []bool) error {
 	lastlist = append(lastlist, last)
-	pathsep := string(os.PathSeparator)
-	dirlist := []fentry{}
+	dirlist := []Fentry{}
 	dirfiles, err := os.ReadDir(s)
 	if err != nil {
-		log.Fatal(err.Error())
+		return err
 	}
 	for _, file := range dirfiles {
 		info, err := file.Info()
 		if err != nil {
-			log.Fatal(err.Error())
+			return err
 		}
-		entry := fentry{
+		entry := Fentry{
 			file.Name(),
 			file.IsDir(),
 			info.Size(),
@@ -56,9 +55,17 @@ func dirTree(out io.Writer, s string, last bool, fflag *bool, lastlist []bool) e
 			dirlist = append(dirlist, entry)
 		}
 	}
+	err = walkDirTree(out, s, lastlist, fflag, dirlist)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
+func walkDirTree(out io.Writer, s string, lastlist []bool, fflag *bool, dirlist []Fentry) error {
+	pathsep := string(os.PathSeparator)
 	for idx, v := range dirlist {
-		last = false
+		last := false
 		depth := strings.Count(s, pathsep)
 		if idx == len(dirlist)-1 {
 			last = true
@@ -66,8 +73,9 @@ func dirTree(out io.Writer, s string, last bool, fflag *bool, lastlist []bool) e
 		if v.ftype {
 			fmt.Fprintln(out, printEntry(v, last, depth, lastlist))
 			path := s + pathsep + v.fname
-			dirTree(out, path, last, fflag, lastlist)
+			BuildDirTree(out, path, last, fflag, lastlist)
 		} else {
+			// specific for MacOS
 			if v.fname == ".DS_Store" {
 				continue
 			} else {
@@ -78,7 +86,7 @@ func dirTree(out io.Writer, s string, last bool, fflag *bool, lastlist []bool) e
 	return nil
 }
 
-func printEntry(v fentry, last bool, depth int, lastlist []bool) (s string) {
+func printEntry(v Fentry, last bool, depth int, lastlist []bool) (s string) {
 	pfx := "├───"
 	filesize := "(empty)"
 
