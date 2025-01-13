@@ -1,1 +1,1 @@
-### The utility simialr to the standard Linux ```tree``` utility
+### The app simulating the standard UNIX/Linux ```tree``` utility
